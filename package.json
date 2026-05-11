@@ -7,10 +7,8 @@
   "scripts": {
     "start": "tsx index.ts env=production",
     "dev": "tsx index.ts env=development",
-
     "deploy": "tsx ./scripts/deploy-commands.ts",
     "deploy:global": "tsx ./scripts/deploy-commands.ts --global",
-
     "unregister": "tsx ./scripts/unregister-commands.ts",
     "unregister:global": "tsx ./scripts/unregister-commands.ts --global"
   },
@@ -25,8 +23,11 @@
   },
   "homepage": "https://github.com/DaenenTDD/discord-bot-template#readme",
   "dependencies": {
+    "@libsql/client": "^0.17.3",
     "discord.js": "^14.26.3",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
     "tsx": "^4.21.0",
