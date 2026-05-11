@@ -1,0 +1,35 @@
+{
+  "name": "discord-bot-template",
+  "version": "1.0.0",
+  "description": "A template for making new discord bots.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts env=production",
+    "dev": "tsx index.ts env=development",
+
+    "deploy": "tsx ./scripts/deploy-commands.ts",
+    "deploy:global": "tsx ./scripts/deploy-commands.ts --global",
+
+    "unregister": "tsx ./scripts/unregister-commands.ts",
+    "unregister:global": "tsx ./scripts/unregister-commands.ts --global"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DaenenTDD/discord-bot-template.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DaenenTDD/discord-bot-template/issues"
+  },
+  "homepage": "https://github.com/DaenenTDD/discord-bot-template#readme",
+  "dependencies": {
+    "discord.js": "^14.26.3",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
