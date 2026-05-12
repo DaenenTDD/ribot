@@ -11,4 +11,4 @@ node_modules/
 logs/
 
 #database
-src/database/ribot.db
+src/database/*.db
