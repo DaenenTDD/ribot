@@ -80,9 +80,9 @@ export default {
                 target: voiceStats.userId,
                 set: {
                     username: newState.member!.user.username,
-                    timeInVoice: sql`time_in_voice + ${now - session.joinedAt}`,
-                    timeDeafened: sql`time_deafened + ${session.timeDeafened}`,
-                    timeMuted: sql`time_muted + ${session.timeMuted}`,
+                    timeInVoice: sql`${voiceStats.timeInVoice} + ${now - session.joinedAt}`,
+                    timeDeafened: sql`${voiceStats.timeDeafened} + ${session.timeDeafened}`,
+                    timeMuted: sql`${voiceStats.timeMuted} + ${session.timeMuted}`,
                     updatedAt: now
                 }
             });
