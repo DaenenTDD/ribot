@@ -3,7 +3,7 @@ import { parseArgs } from "./parseArgs.js";
 import fs from "fs";
 import logger from "@/utils/logger.js";
 
-export default async function initEnv(): Promise<void> {
+export default function initEnv(): void {
     const args = parseArgs();
     const envArg = args.env
 
