@@ -2,6 +2,9 @@ import { Events, type VoiceState } from "discord.js";
 import { voiceStore } from "@/features/stats/voiceStore.js";
 import type { Event } from "@/types/event.js";
 import logger from "@/utils/logger.js";
+import { db } from "@/database/database.js";
+import { voiceStats } from "@/database/schema.js";
+import { sql } from "drizzle-orm";
 
 export default {
     event: Events.VoiceStateUpdate,
@@ -64,9 +67,25 @@ export default {
                 session.mutedAt = null;
             }
 
-            console.log(
-                `${newState.member?.displayName} was deafened for ${session.timeDeafened / 1000} seconds!`,
-            );
+            const stats: typeof voiceStats.$inferInsert = {
+                userId: userId,
+                username: newState.member!.user.username,
+                timeInVoice: now - session.joinedAt,
+                timeDeafened: session.timeDeafened,
+                timeMuted: session.timeMuted,
+                updatedAt: now,
+            }
+
+            await db.insert(voiceStats).values(stats).onConflictDoUpdate({
+                target: voiceStats.userId,
+                set: {
+                    username: newState.member!.user.username,
+                    timeInVoice: sql`time_in_voice + ${now - session.joinedAt}`,
+                    timeDeafened: sql`time_deafened + ${session.timeDeafened}`,
+                    timeMuted: sql`time_muted + ${session.timeMuted}`,
+                    updatedAt: now
+                }
+            });
             voiceStore.delete(newState.id);
         }
     },

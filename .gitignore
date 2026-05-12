@@ -9,3 +9,6 @@ node_modules/
 
 #logs
 logs/
+
+#database
+src/database/ribot.db
