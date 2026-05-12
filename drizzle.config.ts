@@ -1,7 +1,7 @@
 import initEnv from "@/core/lib/initEnv.js";
 import { defineConfig } from "drizzle-kit";
 
-await initEnv();
+initEnv();
 
 export default defineConfig({
     schema: "./src/database/schema.ts",

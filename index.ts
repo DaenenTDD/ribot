@@ -8,7 +8,7 @@ import logger from "@/utils/logger.js";
 logger.info("Starting...");
 logger.info(`Arguments: ${process.argv.slice(2).join(" ")}`);
 
-await initEnv();
+initEnv();
 
 const initializeClient = async (): Promise<Client> => {
     const client = new Client({

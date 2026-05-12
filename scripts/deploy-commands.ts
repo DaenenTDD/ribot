@@ -4,10 +4,7 @@ import initEnv from "@/core/lib/initEnv.js";
 import { getFlags } from "@/core/lib/parseArgs.js";
 import logger from "@/utils/logger.js";
 
-await initEnv().catch((error) => {
-    logger.error(`Error initializing environment variables: ${error.message}`);
-    process.exit(1);
-});
+initEnv();
 
 const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN!);
 const commandData = await loadCommandData();
@@ -31,7 +28,7 @@ const deployCommandsGlobal = async (): Promise<void> => {
         logger.error(`Error deploying commands: ${error}`);
     }
 }
- 
+
 if (getFlags().includes("--global")) {
     await deployCommandsGlobal();
 } else {
