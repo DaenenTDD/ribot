@@ -1,7 +1,7 @@
 services:
   ribot:
     image: node:26-alpine
-    working_dir:
+    working_dir: /app
     restart: unless-stopped
     command: sh start.sh development
     volumes:
