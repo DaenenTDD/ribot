@@ -1,5 +1,5 @@
 #!/bin/sh
-ENV=${1:-development}  # defaults to development if no arg given
-npm ci --omit=dev
+set -e
+
 npx drizzle-kit migrate
-exec npx tsx index.ts env=$ENV
+exec npx tsx index.ts

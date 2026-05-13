@@ -1,8 +1,11 @@
 services:
   ribot:
-    image: node:26-alpine
-    working_dir: /app
+    build: .
     restart: unless-stopped
-    command: sh start.sh production
+    env_file:
+      - .env.development
     volumes:
-      - .:/app
+      - db_data:/app/data
+
+volumes:
+  db_data:

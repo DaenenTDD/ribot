@@ -1,0 +1,16 @@
+# Node Modules
+node_modules/
+
+#env
+.env
+.env.production
+.env.development
+.env.local
+
+#logs
+logs/
+
+#database
+*.db
+*.db-wal
+*.db-shm
