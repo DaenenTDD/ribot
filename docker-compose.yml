@@ -3,6 +3,6 @@ services:
     image: node:26-alpine
     working_dir: /app
     restart: unless-stopped
-    command: sh start.sh development
+    command: sh start.sh production
     volumes:
       - .:/app
