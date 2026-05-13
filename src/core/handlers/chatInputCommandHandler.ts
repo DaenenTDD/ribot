@@ -55,9 +55,15 @@ export const chatInputCommandHandler = async (interaction: BaseInteraction): Pro
         await command.execute(interaction);
     } catch (error: any) {
         logger.error(`Error executing command ${interaction.commandName}: ${error.message}`);
-        await interaction.reply({
-            content: "An error occurred while executing this command.",
-            flags: MessageFlags.Ephemeral,
-        });
+        if (interaction.deferred) {
+            await interaction.followUp({
+                content: "An error occurred while executing this command."
+            });
+        } else {
+            await interaction.reply({
+                content: "An error occurred while executing this command.",
+                flags: MessageFlags.Ephemeral,
+            });
+        }
     }
 }
