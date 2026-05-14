@@ -30,6 +30,7 @@ const initializeClient = async (): Promise<Client> => {
 
 const shutdown = async (signal: string) => {
     logger.info(`Recieved signal ${signal}. Shutting down gracefully...`)
+    console.log(`Recieved signal ${signal}. Shutting down gracefully...`)
     await saveMemoryToDB();
     process.exit();
 }
