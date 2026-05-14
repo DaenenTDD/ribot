@@ -16,6 +16,7 @@ export default {
             if (channel[1].type === ChannelType.GuildVoice) {
                 for (const member of channel[1].members) {
                     const voiceState: VoiceState = member[1].voice;
+                    logger.debug(`Loading pre-existing session into memory for ${member[1].user.id}`)
 
                     voiceStore.set(member[1].id, {
                         username: member[1].user.username,

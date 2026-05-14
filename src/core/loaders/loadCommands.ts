@@ -15,7 +15,6 @@ export async function loadCommands(client: Client): Promise<void> {
     for (const file of files) {
         const parts = file.split(path.sep);
         if (!parts.includes("commands")) continue;
-        logger.debug(`Loading command from file: ${file}`);
         const { default: command } = await import(pathToFileURL(file).href) as { default: Command };
 
         if (!command) {

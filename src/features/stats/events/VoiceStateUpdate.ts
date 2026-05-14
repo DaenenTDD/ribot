@@ -20,6 +20,7 @@ export default {
 
         const now = Date.now();
         if (!oldState.channel) {
+            logger.debug(`Creating new voice session for ${userId}`)
             voiceStore.set(newState.id, {
                 username: newState.member!.user.username,
                 joinedAt: now,
@@ -77,17 +78,24 @@ export default {
                 updatedAt: now,
             }
 
-            await db.insert(voiceStats).values(stats).onConflictDoUpdate({
-                target: voiceStats.userId,
-                set: {
-                    username: newState.member!.user.username,
-                    timeInVoice: sql`${voiceStats.timeInVoice} + ${now - session.joinedAt}`,
-                    timeDeafened: sql`${voiceStats.timeDeafened} + ${session.timeDeafened}`,
-                    timeMuted: sql`${voiceStats.timeMuted} + ${session.timeMuted}`,
-                    updatedAt: now
-                }
-            });
-            voiceStore.delete(newState.id);
+            try {
+                await db.insert(voiceStats).values(stats).onConflictDoUpdate({
+                    target: voiceStats.userId,
+                    set: {
+                        username: newState.member!.user.username,
+                        timeInVoice: sql`${voiceStats.timeInVoice} + ${now - session.joinedAt}`,
+                        timeDeafened: sql`${voiceStats.timeDeafened} + ${session.timeDeafened}`,
+                        timeMuted: sql`${voiceStats.timeMuted} + ${session.timeMuted}`,
+                        updatedAt: now
+                    }
+                });
+                logger.debug(`Saved session for ${userId}`);
+            } catch (error) {
+                logger.error(`Error saving session for ${userId}: ${error}`);
+            } finally {
+                voiceStore.delete(newState.id);
+                logger.debug(`Removed session for ${userId}`);
+            }
         }
     },
 } satisfies Event;

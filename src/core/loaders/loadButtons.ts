@@ -15,7 +15,6 @@ export async function loadButtons(client: Client): Promise<void> {
     for (const file of files) {
         const parts = file.split(path.sep);
         if (!parts.includes("buttons")) continue;
-        logger.debug(`Loading button from file: ${file}`)
         const { default: button } = await import(pathToFileURL(file).href) as { default: Button };
 
         if (!button) {

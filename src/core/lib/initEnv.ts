@@ -4,6 +4,7 @@ import fs from "fs";
 import logger from "@/utils/logger.js";
 
 export default function initEnv(): void {
+    logger.debug("initializing environment vars...");
     if (process.env.DISCORD_TOKEN) {
         logger.info(
             "It appears env vars are already loaded, skipping initEnv()",
@@ -44,6 +45,7 @@ export default function initEnv(): void {
         logger.warn("No environment specified, defaulting to .env.development");
         config({ path: ".env.development", quiet: true });
     }
+    logger.debug("finished initializing env")
 }
 
 function checkEnvFiles(): string[] {

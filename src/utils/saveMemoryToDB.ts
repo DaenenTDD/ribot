@@ -5,6 +5,7 @@ import { sql } from "drizzle-orm";
 import logger from "./logger.js";
 
 export async function saveMemoryToDB(): Promise<void> {
+    logger.info("Saving data...")
     const now = Date.now();
 
     for (const [userId, session] of voiceStore) {
@@ -28,6 +29,7 @@ export async function saveMemoryToDB(): Promise<void> {
                     updatedAt: now,
                 }
             });
+            logger.debug(`Saved voice stats for: ${userId}`)
         } catch (error) {
             logger.error(`Failed to save voice stats for ${userId}: ${error}`)
         }
