@@ -1,14 +1,16 @@
+import initEnv from "@/core/lib/initEnv.js";
+initEnv();
+
 import { Collection, Client } from "discord.js";
 import { loadCommands } from "@/core/loaders/loadCommands.js";
-import initEnv from "@/core/lib/initEnv.js";
 import { loadEvents } from "@/core/loaders/loadEvents.js";
 import { loadButtons } from "@/core/loaders/loadButtons.js";
 import logger from "@/utils/logger.js";
+const { saveMemoryToDB } = await import("@/utils/saveMemoryToDB.js");
 
 logger.info("Starting...");
 logger.info(`Arguments: ${process.argv.slice(2).join(" ")}`);
 
-initEnv();
 
 const initializeClient = async (): Promise<Client> => {
     const client = new Client({
@@ -26,6 +28,12 @@ const initializeClient = async (): Promise<Client> => {
     return client;
 };
 
+const shutdown = async (signal: string) => {
+    logger.info(`Recieved signal ${signal}. Shutting down gracefully...`)
+    await saveMemoryToDB();
+    process.exit();
+}
+
 const client = await initializeClient();
 
 client.login(process.env.DISCORD_TOKEN).then(() => {
@@ -33,9 +41,6 @@ client.login(process.env.DISCORD_TOKEN).then(() => {
     console.log(`Bot logged in successfully as ${client.user?.tag}`);
 });
 
-process.on("SIGINT", () => {
-    logger.info("Shutting down (SIGINT)...");
-    client.destroy();
-    process.exit(0);
-})
+process.on("SIGINT", () => shutdown("SIGINT"));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
 

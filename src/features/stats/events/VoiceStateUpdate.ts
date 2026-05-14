@@ -21,6 +21,7 @@ export default {
         const now = Date.now();
         if (!oldState.channel) {
             voiceStore.set(newState.id, {
+                username: newState.member!.user.username,
                 joinedAt: now,
                 deafenedAt: newState.selfDeaf ? now : null,
                 mutedAt: newState.selfMute ? now : null,

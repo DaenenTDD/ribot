@@ -1,7 +1,8 @@
-import { ChatInputCommandInteraction, EmbedBuilder, MessageFlags, SlashCommandSubcommandBuilder, escapeMarkdown } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandSubcommandBuilder, escapeMarkdown } from "discord.js";
 import { db } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
-import { desc } from "drizzle-orm";
+import { voiceStore } from "../../voiceStore.js";
+import type { VoiceSession } from "@/types/voiceSession.js";
 
 type VoiceLeaderboardType = "vc" | "deaf" | "mute";
 
@@ -38,11 +39,12 @@ export default {
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
         const type = interaction.options.getString("sort", true) as VoiceLeaderboardType
-        const leaderboard = await getVoiceLeaderboard(type);
+
+        const leaderboard = await getLeaderboard(type);
 
         if (leaderboard.length === 0) {
             interaction.followUp({
-                content: "No voice data has been collected :("
+                content: "No data has been collected for that statistic :("
             })
             return;
         }
@@ -62,17 +64,70 @@ export default {
     }
 }
 
-async function getVoiceLeaderboard(type: VoiceLeaderboardType) {
+async function getLeaderboard(type: VoiceLeaderboardType) {
+    const rows = await getDatabaseRows(type);
+    const merged = rows.map(row => mergeLiveStats(row, type));
+
+    for (const [userId, session] of voiceStore) {
+        if (!merged.some(r => r.userId === userId)) {
+            merged.push(getLiveRow(userId, session, type))
+        }
+    }
+
+    return merged.sort((a, b) => b.stat - a.stat).slice(0, 10);
+}
+
+async function getDatabaseRows(type: VoiceLeaderboardType) {
     const map = leaderboardMap[type];
 
     return await db
         .select({
+            userId: voiceStats.userId,
+            username: voiceStats.username,
             stat: map.column,
-            username: voiceStats.username
         })
-        .from(voiceStats)
-        .orderBy(desc(map.column))
-        .limit(10);
+        .from(voiceStats);
+}
+
+function mergeLiveStats(row: { userId: string, username: string, stat: number }, type: VoiceLeaderboardType) {
+    const session = voiceStore.get(row.userId);
+    if (!session) return row;
+
+    const now = Date.now();
+    let extra = 0
+
+    switch (type) {
+        case "vc":
+            extra = now - session.joinedAt;
+            break;
+        case "deaf":
+            extra = session.timeDeafened + (session.deafenedAt ? now - session.deafenedAt : 0);
+            break;
+        case "mute":
+            extra = session.timeMuted + (session.mutedAt ? now - session.mutedAt : 0);
+            break;
+    }
+
+    return { ...row, stat: row.stat + extra };
+}
+
+function getLiveRow(userId: string, session: VoiceSession, type: VoiceLeaderboardType) {
+    const now = Date.now();
+    let stat = 0;
+
+    switch (type) {
+        case "vc":
+            stat = now - session.joinedAt;
+            break;
+        case "deaf":
+            stat = session.timeDeafened + (session.deafenedAt ? now - session.deafenedAt : 0);
+            break;
+        case "mute":
+            stat = session.timeMuted + (session.mutedAt ? now - session.mutedAt : 0);
+            break;
+    }
+
+    return { userId, username: session.username, stat };
 }
 
 function formatDuration(seconds: number): string {
