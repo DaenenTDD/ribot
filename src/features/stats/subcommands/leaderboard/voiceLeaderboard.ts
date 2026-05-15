@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandSubcommandBuilder, escapeMarkdown } from "discord.js";
+import { ChatInputCommandInteraction, ContainerBuilder, MessageFlags, SlashCommandSubcommandBuilder, TextDisplayBuilder, escapeMarkdown } from "discord.js";
 import { db } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { voiceStore } from "../../voiceStore.js";
@@ -50,17 +50,42 @@ export default {
             return;
         }
 
-        const embed = new EmbedBuilder()
-            .setTitle(`${leaderboardMap[type].label} Leaderboard`)
+        const leaderboardComponents = leaderboard.flatMap((row, index) => {
+            const rank = index + 1;
+            let usernameContent: string;
+            let timeContent: string;
 
-        for (const row of leaderboard) {
-            embed.addFields(
-                { name: escapeMarkdown(row.username), value: formatDuration(row.stat / 1000) }
+            if (rank === 1) {
+                usernameContent = `# ${rank}. ${escapeMarkdown(row.username)}`;
+                timeContent = `## \`${formatDuration(row.stat / 1000)}\``;
+            } else if (rank === 2) {
+                usernameContent = `## ${rank}. ${escapeMarkdown(row.username)}`;
+                timeContent = `### \`${formatDuration(row.stat / 1000)}\``;
+            } else if (rank === 3) {
+                usernameContent = `### ${rank}. ${escapeMarkdown(row.username)}`;
+                timeContent = `**\`${formatDuration(row.stat / 1000)}\`**`;
+            } else {
+                usernameContent = `**${rank}. ${escapeMarkdown(row.username)}**`;
+                timeContent = `\`${formatDuration(row.stat / 1000)}\``;
+            }
+
+            return [
+                (textDisplay: TextDisplayBuilder) => textDisplay.setContent(usernameContent),
+                (textDisplay: TextDisplayBuilder) => textDisplay.setContent(timeContent)
+            ];
+        })
+
+        const container = new ContainerBuilder()
+            .addTextDisplayComponents(
+                (textDisplay) =>
+                    textDisplay.setContent(`## ${leaderboardMap[type].label} Leaderboard`)
             )
-        }
+            .addSeparatorComponents((separator) => separator)
+            .addTextDisplayComponents(leaderboardComponents);
 
         interaction.followUp({
-            embeds: [embed]
+            flags: MessageFlags.IsComponentsV2,
+            components: [container]
         })
     }
 }
