@@ -1,4 +1,11 @@
-import { ChatInputCommandInteraction, ContainerBuilder, MessageFlags, SlashCommandSubcommandBuilder, TextDisplayBuilder, escapeMarkdown } from "discord.js";
+import {
+    ChatInputCommandInteraction,
+    ContainerBuilder,
+    MessageFlags,
+    SlashCommandSubcommandBuilder,
+    TextDisplayBuilder,
+    escapeMarkdown,
+} from "discord.js";
 import { db } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { voiceStore } from "../../voiceStore.js";
@@ -20,7 +27,7 @@ const leaderboardMap = {
         label: "Time Muted",
         column: voiceStats.timeMuted,
     },
-}
+};
 
 export default {
     subcommand: new SlashCommandSubcommandBuilder()
@@ -35,23 +42,29 @@ export default {
                     { name: "Time in Voice", value: "vc" },
                     { name: "Time Deafened", value: "deaf" },
                     { name: "Time Muted", value: "mute" },
-                )),
+                ),
+        ),
 
     async execute(interaction: ChatInputCommandInteraction) {
         await interaction.deferReply();
-        const type = interaction.options.getString("sort", true) as VoiceLeaderboardType
+        const type = interaction.options.getString(
+            "sort",
+            true,
+        ) as VoiceLeaderboardType;
 
         const leaderboard = await getLeaderboard(type);
 
         if (leaderboard.length === 0) {
             interaction.followUp({
-                content: "No data has been collected for that statistic :("
-            })
+                content: "No data has been collected for that statistic :(",
+            });
             return;
         }
 
-        const leaderboardComponents = leaderboard.flatMap((row, index) => {
+        const topRows = leaderboard.flatMap((row, index) => {
             const rank = index + 1;
+            if (rank > 3) return [];
+
             let usernameContent: string;
             let timeContent: string;
 
@@ -61,42 +74,55 @@ export default {
             } else if (rank === 2) {
                 usernameContent = `## ${rank}. ${escapeMarkdown(row.username)}`;
                 timeContent = `### \`${formatDuration(row.stat / 1000)}\``;
-            } else if (rank === 3) {
+            } else {
                 usernameContent = `### ${rank}. ${escapeMarkdown(row.username)}`;
                 timeContent = `**\`${formatDuration(row.stat / 1000)}\`**`;
-            } else {
-                usernameContent = `**${rank}. ${escapeMarkdown(row.username)}**`;
-                timeContent = `\`${formatDuration(row.stat / 1000)}\``;
             }
 
             return [
-                (textDisplay: TextDisplayBuilder) => textDisplay.setContent(usernameContent),
-                (textDisplay: TextDisplayBuilder) => textDisplay.setContent(timeContent)
+                (textDisplay: TextDisplayBuilder) =>
+                    textDisplay.setContent(usernameContent),
+                (textDisplay: TextDisplayBuilder) =>
+                    textDisplay.setContent(timeContent),
             ];
-        })
+        });
+
+        const restRows = leaderboard.flatMap((row, index) => {
+            const rank = index + 1;
+            if (rank <= 3) return [];
+            return [
+                (textDisplay: TextDisplayBuilder) =>
+                    textDisplay.setContent(
+                        `${rank}. ${escapeMarkdown(row.username)}: \`${formatDuration(row.stat / 1000)}\``,
+                    ),
+            ];
+        });
 
         const container = new ContainerBuilder()
-            .addTextDisplayComponents(
-                (textDisplay) =>
-                    textDisplay.setContent(`## ${leaderboardMap[type].label} Leaderboard`)
+            .addTextDisplayComponents((textDisplay) =>
+                textDisplay.setContent(
+                    `## ${leaderboardMap[type].label} Leaderboard`,
+                ),
             )
             .addSeparatorComponents((separator) => separator)
-            .addTextDisplayComponents(leaderboardComponents);
+            .addTextDisplayComponents(topRows)
+            .addSeparatorComponents((separator) => separator.setDivider(false))
+            .addTextDisplayComponents(restRows);
 
         interaction.followUp({
             flags: MessageFlags.IsComponentsV2,
-            components: [container]
-        })
-    }
-}
+            components: [container],
+        });
+    },
+};
 
 async function getLeaderboard(type: VoiceLeaderboardType) {
     const rows = await getDatabaseRows(type);
-    const merged = rows.map(row => mergeLiveStats(row, type));
+    const merged = rows.map((row) => mergeLiveStats(row, type));
 
     for (const [userId, session] of voiceStore) {
-        if (!merged.some(r => r.userId === userId)) {
-            merged.push(getLiveRow(userId, session, type))
+        if (!merged.some((r) => r.userId === userId)) {
+            merged.push(getLiveRow(userId, session, type));
         }
     }
 
@@ -115,29 +141,40 @@ async function getDatabaseRows(type: VoiceLeaderboardType) {
         .from(voiceStats);
 }
 
-function mergeLiveStats(row: { userId: string, username: string, stat: number }, type: VoiceLeaderboardType) {
+function mergeLiveStats(
+    row: { userId: string; username: string; stat: number },
+    type: VoiceLeaderboardType,
+) {
     const session = voiceStore.get(row.userId);
     if (!session) return row;
 
     const now = Date.now();
-    let extra = 0
+    let extra = 0;
 
     switch (type) {
         case "vc":
             extra = now - session.joinedAt;
             break;
         case "deaf":
-            extra = session.timeDeafened + (session.deafenedAt ? now - session.deafenedAt : 0);
+            extra =
+                session.timeDeafened +
+                (session.deafenedAt ? now - session.deafenedAt : 0);
             break;
         case "mute":
-            extra = session.timeMuted + (session.mutedAt ? now - session.mutedAt : 0);
+            extra =
+                session.timeMuted +
+                (session.mutedAt ? now - session.mutedAt : 0);
             break;
     }
 
     return { ...row, stat: row.stat + extra };
 }
 
-function getLiveRow(userId: string, session: VoiceSession, type: VoiceLeaderboardType) {
+function getLiveRow(
+    userId: string,
+    session: VoiceSession,
+    type: VoiceLeaderboardType,
+) {
     const now = Date.now();
     let stat = 0;
 
@@ -146,10 +183,14 @@ function getLiveRow(userId: string, session: VoiceSession, type: VoiceLeaderboar
             stat = now - session.joinedAt;
             break;
         case "deaf":
-            stat = session.timeDeafened + (session.deafenedAt ? now - session.deafenedAt : 0);
+            stat =
+                session.timeDeafened +
+                (session.deafenedAt ? now - session.deafenedAt : 0);
             break;
         case "mute":
-            stat = session.timeMuted + (session.mutedAt ? now - session.mutedAt : 0);
+            stat =
+                session.timeMuted +
+                (session.mutedAt ? now - session.mutedAt : 0);
             break;
     }
 
