@@ -3,6 +3,7 @@ import { db } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { voiceStore } from "../../voiceStore.js";
 import type { VoiceSession } from "@/types/voiceSession.js";
+import { formatDuration } from "@/core/lib/formatDuration.js";
 
 type VoiceLeaderboardType = "vc" | "deaf" | "mute";
 
@@ -128,14 +129,4 @@ function getLiveRow(userId: string, session: VoiceSession, type: VoiceLeaderboar
     }
 
     return { userId, username: session.username, stat };
-}
-
-function formatDuration(seconds: number): string {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = (seconds % 60).toFixed(0);
-
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
 }
