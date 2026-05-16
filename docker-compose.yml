@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     env_file:
-      - .env.development
+      - .env.production
     volumes:
       - db_data:/app/data
       - logs:/app/logs
