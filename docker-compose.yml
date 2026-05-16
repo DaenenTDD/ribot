@@ -1,0 +1,13 @@
+services:
+  ribot:
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    volumes:
+      - db_data:/app/data
+      - logs:/app/logs
+
+volumes:
+  db_data:
+  logs:

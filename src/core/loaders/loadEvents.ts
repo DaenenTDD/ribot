@@ -11,18 +11,17 @@ import logger from "@/utils/logger.js";
  */
 export async function loadEvents(client: Client): Promise<void> {
     const files = walk("src/features");
-    
+
     for (const file of files) {
         const parts = file.split(path.sep);
         if (!parts.includes("events")) continue;
-        logger.debug(`Loading event from file: ${file}`);
         const { default: event } = await import(pathToFileURL(file).href) as { default: Event };
-    
+
         if (!event) {
             logger.warn(`No event found in file: ${file}`);
             continue;
         }
-    
+
         if (!event.event || !event.execute) {
             logger.warn(`Invalid event file: ${file}`);
             continue;
