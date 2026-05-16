@@ -7,10 +7,6 @@ import logger from "@/utils/logger.js";
 export default {
     event: Events.InteractionCreate,
     async execute(interaction) {
-        logger.debug(`Recieved interaction of type ${interaction.type}`);
-        logger.debug(
-            `Interaction details: ${JSON.stringify(interaction, (key, value) => (typeof value === "bigint" ? value.toString() : value), 2)}`,
-        );
         switch (interaction.type) {
             case InteractionType.ApplicationCommand:
                 await chatInputCommandHandler(interaction);

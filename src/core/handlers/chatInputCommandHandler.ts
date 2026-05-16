@@ -25,7 +25,6 @@ export const chatInputCommandHandler = async (interaction: BaseInteraction): Pro
     }
 
     if (command.cooldown) {
-
         if (!cooldowns?.has(command.data.name)) {
             cooldowns.set(command.data.name, new Collection<string, number>());
             logger.debug(`Creating cooldown collection for command ${command.data.name}`)
