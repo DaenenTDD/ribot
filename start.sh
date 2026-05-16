@@ -2,4 +2,4 @@
 set -e
 
 npx drizzle-kit migrate
-exec npx tsx index.ts
+exec npx tsx index.ts --debug
