@@ -6,7 +6,7 @@ import {
     TextDisplayBuilder,
     escapeMarkdown,
 } from "discord.js";
-import { db } from "@/database/database.js";
+import { getDb } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { voiceStore } from "../../voiceStore.js";
 import type { VoiceSession } from "@/types/voiceSession.js";
@@ -132,7 +132,7 @@ async function getLeaderboard(type: VoiceLeaderboardType) {
 async function getDatabaseRows(type: VoiceLeaderboardType) {
     const map = leaderboardMap[type];
 
-    return await db
+    return await getDb()
         .select({
             userId: voiceStats.userId,
             username: voiceStats.username,

@@ -1,4 +1,4 @@
-import { db } from "@/database/database.js";
+import { getDb } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { voiceStore } from "@/features/stats/voiceStore.js";
 import { sql } from "drizzle-orm";
@@ -19,7 +19,7 @@ export async function saveMemoryToDB(): Promise<void> {
                 updatedAt: now,
             }
 
-            await db.insert(voiceStats).values(stats).onConflictDoUpdate({
+            await getDb().insert(voiceStats).values(stats).onConflictDoUpdate({
                 target: voiceStats.userId,
                 set: {
                     username: session.username,

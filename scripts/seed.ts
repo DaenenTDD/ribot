@@ -3,7 +3,7 @@ initEnv();
 
 import { seed } from "drizzle-seed";
 import { voiceStats } from "@/database/schema.js";
-const { db } = await import("@/database/database.js");
+const { getDb(): db } = await import("@/database/database.js");
 
 await seed(db, { voiceStats }, { count: 40 }).refine((f) => ({
     voiceStats: {

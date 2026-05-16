@@ -2,7 +2,7 @@ import { Events, type VoiceState } from "discord.js";
 import { voiceStore } from "@/features/stats/voiceStore.js";
 import type { Event } from "@/types/event.js";
 import logger from "@/utils/logger.js";
-import { db } from "@/database/database.js";
+import { getDb } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { sql } from "drizzle-orm";
 
@@ -79,7 +79,7 @@ export default {
             }
 
             try {
-                await db.insert(voiceStats).values(stats).onConflictDoUpdate({
+                await getDb().insert(voiceStats).values(stats).onConflictDoUpdate({
                     target: voiceStats.userId,
                     set: {
                         username: newState.member!.user.username,

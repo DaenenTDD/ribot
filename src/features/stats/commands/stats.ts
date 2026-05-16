@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, Colors, ContainerBuilder, MessageFlags, SeparatorSpacingSize, SlashCommandBuilder, escapeMarkdown } from "discord.js";
 import type { Command } from "@/types/command.js";
-import { db } from "@/database/database.js";
+import { getDb } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { eq } from "drizzle-orm";
 import { voiceStore } from "../voiceStore.js";
@@ -62,7 +62,7 @@ export default {
 } satisfies Command;
 
 async function getVoiceStatsRow(userId: string) {
-    return await db.select().from(voiceStats).where(eq(voiceStats.userId, userId));
+    return await getDb().select().from(voiceStats).where(eq(voiceStats.userId, userId));
 }
 
 function mergeStats(stats: typeof voiceStats.$inferSelect, userId: string) {
