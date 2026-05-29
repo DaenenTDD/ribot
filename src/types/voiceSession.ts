@@ -5,4 +5,5 @@ export interface VoiceSession {
     deafenedAt?: number | null;
     timeDeafened: number;
     timeMuted: number;
+    lastSave: number | null;
 }

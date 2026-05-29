@@ -28,6 +28,7 @@ export default {
                 mutedAt: newState.selfMute ? now : null,
                 timeDeafened: 0,
                 timeMuted: 0,
+                lastSave: null
             });
             return;
         }
