@@ -5,6 +5,7 @@ import logger from "@/utils/logger.js";
 import { getDb } from "@/database/database.js";
 import { voiceStats } from "@/database/schema.js";
 import { sql } from "drizzle-orm";
+import { saveVoiceStats } from "../utils/saveVoiceStats.js";
 
 export default {
     event: Events.VoiceStateUpdate,
@@ -20,7 +21,7 @@ export default {
 
         const now = Date.now();
         if (!oldState.channel) {
-            logger.debug(`Creating new voice session for ${userId}`)
+            logger.debug(`Creating new voice session for ${userId}`);
             voiceStore.set(newState.id, {
                 username: newState.member!.user.username,
                 joinedAt: now,
@@ -28,7 +29,7 @@ export default {
                 mutedAt: newState.selfMute ? now : null,
                 timeDeafened: 0,
                 timeMuted: 0,
-                lastSave: null
+                lastSave: null,
             });
             return;
         }
@@ -60,37 +61,8 @@ export default {
         }
 
         if (!newState.channel) {
-            if (newState.selfDeaf) {
-                session.timeDeafened += now - session.deafenedAt!;
-                session.deafenedAt = null;
-            }
-
-            if (newState.selfMute) {
-                session.timeMuted += now - session.mutedAt!;
-                session.mutedAt = null;
-            }
-
-            const stats: typeof voiceStats.$inferInsert = {
-                userId: userId,
-                username: newState.member!.user.username,
-                timeInVoice: now - session.joinedAt,
-                timeDeafened: session.timeDeafened,
-                timeMuted: session.timeMuted,
-                updatedAt: now,
-            }
-
             try {
-                await getDb().insert(voiceStats).values(stats).onConflictDoUpdate({
-                    target: voiceStats.userId,
-                    set: {
-                        username: newState.member!.user.username,
-                        timeInVoice: sql`${voiceStats.timeInVoice} + ${now - session.joinedAt}`,
-                        timeDeafened: sql`${voiceStats.timeDeafened} + ${session.timeDeafened}`,
-                        timeMuted: sql`${voiceStats.timeMuted} + ${session.timeMuted}`,
-                        updatedAt: now
-                    }
-                });
-                logger.debug(`Saved session for ${userId}`);
+                await saveVoiceStats(userId, newState.member!.user.username);
             } catch (error) {
                 logger.error(`Error saving session for ${userId}: ${error}`);
             } finally {
