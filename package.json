@@ -26,11 +26,11 @@
     "@libsql/client": "^0.17.3",
     "discord.js": "^14.26.3",
     "dotenv": "^17.4.2",
-    "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
     "drizzle-seed": "^0.3.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.31.10",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
