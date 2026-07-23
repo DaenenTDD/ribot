@@ -15,7 +15,9 @@ export async function loadEvents(client: Client): Promise<void> {
     for (const file of files) {
         const parts = file.split(path.sep);
         if (!parts.includes("events")) continue;
-        const { default: event } = await import(pathToFileURL(file).href) as { default: Event };
+        const { default: event } = (await import(pathToFileURL(file).href)) as {
+            default: Event;
+        };
 
         if (!event) {
             logger.warn(`No event found in file: ${file}`);
@@ -26,12 +28,15 @@ export async function loadEvents(client: Client): Promise<void> {
             logger.warn(`Invalid event file: ${file}`);
             continue;
         }
-        logger.debug(`Loaded event with name ${event.event} from file: ${file}`);
 
         if (event.once) {
             client.once(event.event as keyof ClientEvents, event.execute);
         } else {
             client.on(event.event as keyof ClientEvents, event.execute);
         }
+
+        logger.debug(
+            `Loaded event with name ${event.event} from file: ${file}`,
+        );
     }
 }
