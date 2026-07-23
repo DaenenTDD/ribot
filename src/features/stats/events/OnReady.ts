@@ -3,11 +3,10 @@ import logger from "@/utils/logger.js";
 import { Events, Client, ChannelType, VoiceState } from "discord.js";
 import { voiceStore } from "../voiceStore.js";
 
-
 export default {
     event: Events.ClientReady,
     async execute(client: Client) {
-        const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID!)
+        const guild = await client.guilds.fetch(process.env.DISCORD_GUILD_ID!);
         const channels = guild.channels.cache;
 
         const now = Date.now();
@@ -16,7 +15,9 @@ export default {
             if (channel[1].type === ChannelType.GuildVoice) {
                 for (const member of channel[1].members) {
                     const voiceState: VoiceState = member[1].voice;
-                    logger.debug(`Loading pre-existing session into memory for ${member[1].user.id}`)
+                    logger.debug(
+                        `Loading pre-existing session into memory for ${member[1].user.id}`,
+                    );
 
                     voiceStore.set(member[1].id, {
                         username: member[1].user.username,
@@ -24,10 +25,11 @@ export default {
                         deafenedAt: voiceState.selfDeaf ? now : null,
                         mutedAt: voiceState.selfMute ? now : null,
                         timeMuted: 0,
-                        timeDeafened: 0
-                    })
+                        timeDeafened: 0,
+                        lastSave: null,
+                    });
                 }
             }
         }
-    }
-} satisfies Event
+    },
+} satisfies Event;
