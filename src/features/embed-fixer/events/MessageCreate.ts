@@ -4,7 +4,13 @@ import logger from "@/utils/logger.js";
 
 const linksToFix = {
     instagram: {
-        regex: /https?:\/\/(?:www\.)?instagram\.com\/reels?\/([a-zA-Z0-9_-]+)/,
+        name: "Instagram",
+        regex: /(?<!<)https?:\/\/(?:www\.)?instagram\.com\/p\/([a-zA-Z0-9_-]+)/,
+        build: (id: String) => `https://www.kkinstagram.com/p/${id}/`,
+    },
+    instagramReels: {
+        name: "Instagram reels",
+        regex: /(?<!<)https?:\/\/(?:www\.)?instagram\.com\/reels?\/([a-zA-Z0-9_-]+)/,
         build: (id: String) => `https://www.kkinstagram.com/reel/${id}/`,
     },
 };
@@ -16,7 +22,9 @@ export default {
         if (message.author.bot) return;
         if (!message.channel.isSendable()) return;
 
-        for (const [platform, { regex, build }] of Object.entries(linksToFix)) {
+        for (const [platform, { name, regex, build }] of Object.entries(
+            linksToFix,
+        )) {
             const match = message.content.match(regex);
             if (match) {
                 logger.debug(
@@ -26,7 +34,7 @@ export default {
 
                 if (fixedLink) {
                     let sentMessage = await message.channel.send(
-                        `Hey ${message.author}, I fixed your ${platform} link so the video can be played right here in Discord. ${fixedLink} \n\n_This might not always work. If it didn't, this message will be deleted in 15 seconds._`,
+                        `Hey ${message.author}, I fixed your ${name} link so the content can be viewed right here in Discord. ${fixedLink} \n\n_This might not always work. If it didn't, this message will be deleted in 15 seconds._`,
                     );
 
                     setTimeout(async () => {
@@ -36,7 +44,7 @@ export default {
                                 await sentMessage.delete();
                             } else {
                                 await sentMessage.edit(
-                                    `Hey ${message.author}, I fixed your ${platform} link so the video can be played right here in Discord. ${fixedLink}`,
+                                    `Hey ${message.author}, I fixed your ${name} link so the content can be viewed right here in Discord. ${fixedLink}`,
                                 );
                             }
                         } catch (error) {
